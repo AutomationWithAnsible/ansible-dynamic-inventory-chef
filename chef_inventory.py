@@ -115,9 +115,6 @@ class ChefInventory:
 
     def list_nodes(self):
         groups = {}
-        # needed in old versions of ansible? Breaks with ansible 1.9
-        # meta = { "_meta" : { "hostvars" : {} } }
-        # groups.update(meta) 
 
         data = self.read_cache()
         for name, node in data.iteritems():
@@ -148,6 +145,9 @@ class ChefInventory:
 
         # remove any duplicates
         groups = {key : list(set(items)) for (key, items) in groups.iteritems() }
+
+        meta = { "_meta" : { "hostvars" : {} } }
+        groups.update(meta) 
 
         print(self.json_format_dict(groups, pretty=True))
 
