@@ -11,7 +11,7 @@ You need the following environment variables for the dynamic ansible inventory t
 
 ```
 export CHEF_USER=john
-export CHEF_PEMFILE=/home/users/john/.chef/john.pem
+export CHEF_PEMFILE=/home/john/.chef/john.pem
 export CHEF_SERVER_URL="https://my-chef-api"
 ```
 
