@@ -117,6 +117,12 @@ class ChefInventory:
         word = re.sub("[^A-Za-z0-9\-]", "_", word)
         return word
 
+    def check_key(self, dic, attr):
+        if attr in dic:
+            return dic[attr]
+        else:
+            return ['none']
+
     def list_nodes(self):
         groups = {}
 
@@ -134,18 +140,18 @@ class ChefInventory:
                 groups[environment] = []
             groups[environment].append(ip)
 
-            for r in node["automatic"]["roles"]:
+            for r in self.check_key(node["automatic"], "roles"):
                 role = "role_%s" % self.to_safe(r)
                 if role not in groups:
                     groups[role] = []
                 groups[role].append(ip)
             
-            for r in node['automatic']['expanded_run_list']:
+            for r in self.check_key(node['automatic'], 'expanded_run_list'):
                 recipe = "recipe_%s" % self.to_safe(r)
                 if recipe not in groups: groups[recipe] = []
                 groups[recipe].append(ip)
 
-            for tag in node['normal']['tags']:
+            for tag in self.check_key(node['normal'], 'tags'):
                 tag = "tag_%s" % self.to_safe(tag)
                 if tag not in groups: groups[tag] = []
                 groups[tag].append(ip)
