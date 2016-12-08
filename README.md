@@ -4,10 +4,11 @@ Query chef API server to know about available servers. Can be useful if most of 
 
 ## Requirements:
 
-* [Ansible](http://docs.ansible.com/ansible/) [this script was tested with ansible 1.9.2]
+* [Ansible](http://docs.ansible.com/ansible/) [this script was tested with ansible 2.2.0.0]
 * PyChef (`pip install PyChef`)
+* Openssl Dev Libs (`apt-get install libssl-dev`)
 
-You need the following environment variables for the dynamic ansible inventory to work
+You can set the following environment variables for the dynamic ansible inventory to pull custom setting. Otherwise this script will pull the setting from a knife.rb in either ~/.chef/knife.rb or ./.chef/knife.rb.
 
 ```
 export CHEF_USER=john
@@ -15,7 +16,7 @@ export CHEF_PEMFILE=/home/john/.chef/john.pem
 export CHEF_SERVER_URL="https://my-chef-api"
 ```
 
-(altenatively you can put the settings into a chef.ini file living in the same directory as the chef_inventory.py file)
+(alternatively you can put the settings into a chef.ini file living in the same directory as the chef_inventory.py file)
 
 You might find the information under `~/.chef/knife.rb` or `~/.chef/knife_local.rb`
 
@@ -48,11 +49,11 @@ passing `--list` then extracts server's IPs in the format ansible expects, e.g.
 
 ```
 {
-"my-webserver-group": [
+"role_my-webserver-group": [
     "10.0.0.1",
     "10.0.0.2"
   ],
-"my-database-server-group": [
+"chef_environment_aws": [
     "10.0.0.3",
     "10.0.0.4",
     "10.0.0.5"
@@ -62,8 +63,19 @@ passing `--list` then extracts server's IPs in the format ansible expects, e.g.
 
 Within ansible playbooks or roles, you can then refer to `hosts: my-webserver-group`, and name folders under `group_vars` also `my-webserver-group`, which will operate on those servers.
 
+Additional query parameters can be used. This script can be used to search for chef_environments or roles or recipes either in the run-list or included in the roles or by tags.
+
+#### Examples
+```
+ansible 'chef_environment_aws' --list-hosts
+
+ansible 'role_webservers' --lists-hosts
+
+ansible 'tag_tomcat' --list-hosts
+```
+
 force cache refresh: `./chef_inventory.py --refresh-cache`
 
 ## Thanks
 
-Code based on https://gist.github.com/tjheeta/f3538c32965575e59bcd with some modifications to work with a recent version (1.9.2) of ansible and a custom chef setup, as well as to remove duplicate servers in the end result.
+Code based on https://gist.github.com/tjheeta/f3538c32965575e59bcd with some modifications to work with a recent version (2.2.0) of ansible and a custom chef setup, as well as to remove duplicate servers in the end result.
