@@ -25,6 +25,7 @@ class ChefInventory:
         self.cache_path =  os.path.join(os.path.expanduser('~'),'.ansible-chef.cache')
 
         self.read_settings()
+        self.api = chef.autoconfigure()
 
         if self.chef_server_url and self.client_key and self.client_name:
             print("Using chef ini values", file=sys.stderr)
@@ -35,11 +36,12 @@ class ChefInventory:
             username = os.environ.get('CHEF_USER')
             chef_server_url = os.environ.get('CHEF_SERVER_URL')
 
-            if pemfile is None or username is None or chef_server_url is None:
-                print("Set CHEF_PEMFILE, CHEF_USER and CHEF_API_SERVER environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
-                exit(0)
+            if not self.api:
+                if pemfile is None or username is None or chef_server_url is None:
+                    print("Set CHEF_PEMFILE, CHEF_USER and CHEF_API_SERVER environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
+                    exit(0)
 
-            self.api=chef.ChefAPI(CHEF_SERVER_URL, pemfile, username)
+                self.api=chef.ChefAPI(chef_server_url, pemfile, username)
         if not self.api:
             print("Could not find chef configuration", file=sys.stderr)
             sys.exit(1)
@@ -111,7 +113,15 @@ class ChefInventory:
             return json.dumps(data)
 
     def to_safe(self, word):
-        return re.sub("[^A-Za-z0-9\-]", "_", word)
+        word = re.sub(":{2,}",':', word) 
+        word = re.sub("[^A-Za-z0-9\-]", "_", word)
+        return word
+
+    def check_key(self, dic, attr):
+        if attr in dic:
+            return dic[attr]
+        else:
+            return ['none']
 
     def list_nodes(self):
         groups = {}
@@ -125,20 +135,30 @@ class ChefInventory:
                 continue
        
             # create a list of environments
-            environment = self.to_safe(node["chef_environment"])
+            environment = "chef_environment_%s" % self.to_safe(node["chef_environment"])
             if environment not in groups:
                 groups[environment] = []
             groups[environment].append(ip)
 
-            for r in node["automatic"]["roles"]:
-                role = self.to_safe(r)
+            for r in self.check_key(node["automatic"], "roles"):
+                role = "role_%s" % self.to_safe(r)
                 if role not in groups:
                     groups[role] = []
                 groups[role].append(ip)
+            
+            for r in self.check_key(node['automatic'], 'expanded_run_list'):
+                recipe = "recipe_%s" % self.to_safe(r)
+                if recipe not in groups: groups[recipe] = []
+                groups[recipe].append(ip)
+
+            for tag in self.check_key(node['normal'], 'tags'):
+                tag = "tag_%s" % self.to_safe(tag)
+                if tag not in groups: groups[tag] = []
+                groups[tag].append(ip)
 
             for i in node["run_list"]:
                 m = re.match(r'(role|recipe)\[(.*)\]', i)
-                item = self.to_safe(m.group(2))
+                item = "%s_%s" % (self.to_safe(m.group(1)), self.to_safe(m.group(2)))
                 if item not in groups:
                     groups[item] = []
                 groups[item].append(ip)
@@ -173,4 +193,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
