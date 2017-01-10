@@ -38,7 +38,7 @@ class ChefInventory:
 
             if not self.api:
                 if pemfile is None or username is None or chef_server_url is None:
-                    print("Set CHEF_PEMFILE, CHEF_USER and CHEF_API_SERVER environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
+                    print("Set CHEF_PEMFILE, CHEF_USER and CHEF_SERVER_URL environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
                     exit(0)
 
                 self.api=chef.ChefAPI(chef_server_url, pemfile, username)
