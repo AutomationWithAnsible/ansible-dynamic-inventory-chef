@@ -125,20 +125,23 @@ class ChefInventory:
 
     def list_nodes(self):
         groups = {}
+        hostvars = {}
 
         data = self.read_cache()
         for name, node in data.iteritems():
             # make sure node is configured/working
             if ( "ipaddress" in node["automatic"].keys() ):
-                ip=node["automatic"]["ipaddress"] 
+                if name not in hostvars:
+                    hostvars[name] = {}
+                hostvars[name]['ansible_ssh_host'] = node["automatic"]["ipaddress"]
             else:
                 continue
-       
+
             # create a list of environments
             environment = "chef_environment_%s" % self.to_safe(node["chef_environment"])
             if environment not in groups:
                 groups[environment] = []
-            groups[environment].append(ip)
+            groups[environment].append(name)
 
             for r in self.check_key(node["automatic"], "roles"):
                 role = "role_%s" % self.to_safe(r)
@@ -161,12 +164,12 @@ class ChefInventory:
                 item = "%s_%s" % (self.to_safe(m.group(1)), self.to_safe(m.group(2)))
                 if item not in groups:
                     groups[item] = []
-                groups[item].append(ip)
+                groups[item].append(name)
 
         # remove any duplicates
         groups = {key : list(set(items)) for (key, items) in groups.iteritems() }
 
-        meta = { "_meta" : { "hostvars" : {} } }
+        meta = { "_meta" : { "hostvars" : hostvars } }
         groups.update(meta) 
 
         print(self.json_format_dict(groups, pretty=True))
