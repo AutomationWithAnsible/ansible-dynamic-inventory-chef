@@ -143,28 +143,32 @@ class ChefInventory:
                 groups[environment] = []
             groups[environment].append(name)
 
-            for r in self.check_key(node["automatic"], "roles"):
-                role = "role_%s" % self.to_safe(r)
-                if role not in groups:
-                    groups[role] = []
-                groups[role].append(ip)
+            if node["automatic"]["roles"] is not None:
+                for r in self.check_key(node["automatic"], "roles"):
+                    role = "role_%s" % self.to_safe(r)
+                    if role not in groups:
+                        groups[role] = []
+                    groups[role].append(node["automatic"]["ipaddress"])
             
-            for r in self.check_key(node['automatic'], 'expanded_run_list'):
-                recipe = "recipe_%s" % self.to_safe(r)
-                if recipe not in groups: groups[recipe] = []
-                groups[recipe].append(ip)
+            if 'expanded_run_list' in node["automatic"]:
+                for r in self.check_key(node['automatic'], 'expanded_run_list'):
+                    recipe = "recipe_%s" % self.to_safe(r)
+                    if recipe not in groups: groups[recipe] = []
+                    groups[recipe].append(node["automatic"]["ipaddress"])
 
-            for tag in self.check_key(node['normal'], 'tags'):
-                tag = "tag_%s" % self.to_safe(tag)
-                if tag not in groups: groups[tag] = []
-                groups[tag].append(ip)
+            if node["normal"]["tags"] is not None:
+                for tag in self.check_key(node['normal'], 'tags'):
+                    tag = "tag_%s" % self.to_safe(tag)
+                    if tag not in groups: groups[tag] = []
+                    groups[tag].append(node["automatic"]["ipaddress"])
 
-            for i in node["run_list"]:
-                m = re.match(r'(role|recipe)\[(.*)\]', i)
-                item = "%s_%s" % (self.to_safe(m.group(1)), self.to_safe(m.group(2)))
-                if item not in groups:
-                    groups[item] = []
-                groups[item].append(name)
+            if node["run_list"] is not None:
+                for i in node["run_list"]:
+                    m = re.match(r'(role|recipe)\[(.*)\]', i)
+                    item = "%s_%s" % (self.to_safe(m.group(1)), self.to_safe(m.group(2)))
+                    if item not in groups:
+                        groups[item] = []
+                    groups[item].append(name)
 
         # remove any duplicates
         groups = {key : list(set(items)) for (key, items) in groups.iteritems() }
