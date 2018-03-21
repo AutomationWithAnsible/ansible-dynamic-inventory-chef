@@ -63,7 +63,7 @@ class ChefInventory:
         if config.has_option('chef', 'chef_server_url'):
             self.chef_server_url = config.get('chef', 'chef_server_url')
         if config.has_option('chef', 'client_key'):
-            self.client_key = config.get('chef', 'client_key')
+            self.client_key = os.path.expanduser(config.get('chef', 'client_key'))
         if config.has_option('chef', 'client_name'):
             self.client_name = config.get('chef', 'client_name')
 
