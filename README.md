@@ -14,19 +14,20 @@ You can set the following environment variables for the dynamic ansible inventor
 export CHEF_USER=john
 export CHEF_PEMFILE=/home/john/.chef/john.pem
 export CHEF_SERVER_URL="https://my-chef-api"
+export CHEF_SERVER_SSL_VERIFY=true
 ```
 
 (alternatively you can put the settings into a chef.ini file living in the same directory as the chef_inventory.py file)
 
 You might find the information under `~/.chef/knife.rb` or `~/.chef/knife_local.rb`
 
-Copy chef_inventory.py to a location of your convenience, configuring your `ansible.cfg` to include 
+Copy chef_inventory.py to a location of your convenience, configuring your `ansible.cfg` to include
 
 ```
 hostfile=chef_inventory.py
 ```
 
-or point to it when running your scripts with 
+or point to it when running your scripts with
 
 ```
 ansible-playbook -i /path/to/chef_inventory.py
@@ -45,7 +46,7 @@ try it with
 
 This python script `chef_inventory.py` first queries the chef API to find servers, and caches the results in your home directory at `~/.ansible-chef.cache`.
 That file is kept for 60 minutes (feel free to change `self.cache_max_age = 3600` in the python code)
-passing `--list` then extracts server's IPs in the format ansible expects, e.g. 
+passing `--list` then extracts server's IPs in the format ansible expects, e.g.
 
 ```
 {

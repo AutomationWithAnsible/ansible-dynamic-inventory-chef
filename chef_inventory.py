@@ -19,6 +19,7 @@ class ChefInventory:
     def __init__(self):
         self.parser = self._create_parser()
         self.chef_server_url = ""
+        self.chef_server_ssl_verify = True
         self.client_key = ""
         self.client_name = ""
         self.cache_max_age = 3600
@@ -29,19 +30,26 @@ class ChefInventory:
 
         if self.chef_server_url and self.client_key and self.client_name:
             print("Using chef ini values", file=sys.stderr)
-            self.api = chef.ChefAPI(self.chef_server_url, self.client_key, self.client_name)
+            self.api = chef.ChefAPI(url=self.chef_server_url,
+                                    key=self.client_key,
+                                    client=self.client_name,
+                                    ssl_verify=self.chef_server_ssl_verify)
         else:
 
             pemfile = os.environ.get('CHEF_PEMFILE')
             username = os.environ.get('CHEF_USER')
             chef_server_url = os.environ.get('CHEF_SERVER_URL')
+            chef_server_ssl_verify = os.environ.get('CHEF_SERVER_SSL_VERIFY', True) in [True, 'True', 'true', 1, '1']
 
             if not self.api:
                 if pemfile is None or username is None or chef_server_url is None:
                     print("Set CHEF_PEMFILE, CHEF_USER and CHEF_SERVER_URL environment vars. They might be located under ~/.chef/knife_local.rb or ~/.chef/knife.rb")
                     exit(0)
 
-                self.api=chef.ChefAPI(chef_server_url, pemfile, username)
+                self.api=chef.ChefAPI(url=chef_server_url,
+                                      key=pemfile,
+                                      client=username,
+                                      ssl_verify=chef_server_ssl_verify)
         if not self.api:
             print("Could not find chef configuration", file=sys.stderr)
             sys.exit(1)
@@ -66,7 +74,8 @@ class ChefInventory:
             self.client_key = os.path.expanduser(config.get('chef', 'client_key'))
         if config.has_option('chef', 'client_name'):
             self.client_name = config.get('chef', 'client_name')
-
+        if config.has_option('chef', 'chef_server_ssl_verify'):
+            self.chef_server_ssl_verify = config.getboolean('chef', 'chef_server_ssl_verify')
 
     def refresh_cache(self):
         print("REFRESHING CACHE - COULD TAKE A WHILE", file=sys.stderr)
