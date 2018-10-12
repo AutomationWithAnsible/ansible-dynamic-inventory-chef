@@ -151,8 +151,7 @@ class ChefInventory:
             if environment not in groups:
                 groups[environment] = []
             groups[environment].append(name)
-
-            if node["automatic"]["roles"] is not None:
+            if ('roles' in node["automatic"]) and ( node["automatic"]["roles"]  is not None):
                 for r in self.check_key(node["automatic"], "roles"):
                     role = "role_%s" % self.to_safe(r)
                     if role not in groups:
