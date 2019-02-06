@@ -142,7 +142,7 @@ class ChefInventory:
             if ( "ipaddress" in node["automatic"].keys() ):
                 if name not in hostvars:
                     hostvars[name] = {}
-                hostvars[name]['ansible_ssh_host'] = node["automatic"]["ipaddress"]
+                hostvars[name]['ansible_ssh_host'] = node["automatic"]["ipaddress"]  # DEPRECATED since ansible 2.x
                 hostvars[name]['ansible_host'] = node["automatic"]["ipaddress"]
             else:
                 continue
