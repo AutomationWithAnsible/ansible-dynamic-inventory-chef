@@ -95,7 +95,7 @@ class ChefInventory:
         parser.add_argument(u'--host', help=u'Retrieve variable information.')
         parser.add_argument(u'--refresh-cache',  action=u'store_true', help=u'Refresh the cache')
         return parser
-  
+
     def read_cache(self):
         cache = open(self.cache_path, 'r')
         data = json.loads(cache.read())
@@ -106,7 +106,7 @@ class ChefInventory:
         cache = open(self.cache_path, 'w')
         cache.write(json_data)
         cache.close()
-   
+
     def is_cache_valid(self):
        if os.path.isfile(self.cache_path):
             mod_time = os.path.getmtime(self.cache_path)
@@ -122,7 +122,7 @@ class ChefInventory:
             return json.dumps(data)
 
     def to_safe(self, word):
-        word = re.sub(":{2,}",':', word) 
+        word = re.sub(":{2,}",':', word)
         word = re.sub("[^A-Za-z0-9\-]", "_", word)
         return word
 
@@ -142,7 +142,8 @@ class ChefInventory:
             if ( "ipaddress" in node["automatic"].keys() ):
                 if name not in hostvars:
                     hostvars[name] = {}
-                hostvars[name]['ansible_ssh_host'] = node["automatic"]["ipaddress"]
+                hostvars[name]['ansible_ssh_host'] = node["automatic"]["ipaddress"]  # DEPRECATED since ansible 2.x
+                hostvars[name]['ansible_host'] = node["automatic"]["ipaddress"]
             else:
                 continue
 
@@ -157,7 +158,7 @@ class ChefInventory:
                     if role not in groups:
                         groups[role] = []
                     groups[role].append(node["automatic"]["ipaddress"])
-            
+
             if 'expanded_run_list' in node["automatic"]:
                 for r in self.check_key(node['automatic'], 'expanded_run_list'):
                     recipe = "recipe_%s" % self.to_safe(r)
@@ -182,7 +183,7 @@ class ChefInventory:
         groups = {key : list(set(items)) for (key, items) in groups.iteritems() }
 
         meta = { "_meta" : { "hostvars" : hostvars } }
-        groups.update(meta) 
+        groups.update(meta)
 
         print(self.json_format_dict(groups, pretty=True))
 
@@ -208,5 +209,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
